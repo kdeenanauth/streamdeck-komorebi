@@ -27,11 +27,12 @@ Displays [Komorebi](https://github.com/LGUG2Z/komorebi) state information and op
 
 ## Installation
 
-TBA
+Download the [latest release](https://github.com/kdeenanauth/streamdeck-komorebi/releases) and double-click to install.
 
 ## Usage
 
-TBA
+Plugin can be configured once added to a key:
+![Sample Config](images/sampleConfig.png)
 
 ## Contributing
 

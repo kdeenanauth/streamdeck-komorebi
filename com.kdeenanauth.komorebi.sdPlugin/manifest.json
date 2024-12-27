@@ -43,7 +43,9 @@
 		"Debug": "enabled"
 	},
 	"ApplicationsToMonitor": {
-        "windows": ["komorebi.exe"]
-    },
+		"windows": [
+			"komorebi.exe"
+		]
+	},
 	"UUID": "com.kdeenanauth.komorebi"
 }
