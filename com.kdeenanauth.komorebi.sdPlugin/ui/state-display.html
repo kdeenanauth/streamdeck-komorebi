@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <title>State Display Settings</title>
+    <meta charset="utf-8" />
+    <script src="https://sdpi-components.dev/releases/v3/sdpi-components.js"></script>
+</head>
+
+<body>
+    <!--
+        Learn more about property inspector components at https://sdpi-components.dev/docs/components
+    -->
+    <sdpi-item label="Title Format">
+        <sdpi-textarea setting="titleFormat" maxlength="4096" rows="4"></sdpi-textarea>
+        <p>
+            Title Format can utilize variables with the syntax <code>${variable}</code>
+        </p>
+        <p>
+            Variables available are:
+            <ul>
+                <li><code>monitorIndex</code></li>
+                <li><code>monitorIndexOneBased</code></li>
+                <li><code>workspaceIndex</code></li>
+                <li><code>workspaceIndexOneBased</code></li>
+                <li><code>workspaceName</code></li>
+                <li><code>numWorkspaces</code> - number of used workspaces on the monitor</li>
+                <li><code>layout</code></li>
+                <li><code>abbrevLayout</code> - abbreviated version of layout</li>
+                <li><code>containerIndex</code></li>
+                <li><code>containerIndexOneBased</code></li>
+                <li><code>numWindows</code> - number of windows in a workspace</li>
+                <li><code>activeWindowTitle</code></li>
+                <li><code>activeWindowExe</code></li>
+            </ul>
+        </p>
+    </sdpi-item>
+
+    <sdpi-item label="Key Down Komorebic Arguments">
+        <sdpi-textfield setting="keyArguments" placeholder="E.g. toggle-float"></sdpi-textarea>
+        <p>
+            Leaving above blank will do nothing on key down
+        </p>
+    </sdpi-item>
+    
+
+    <sdpi-item label="Static Monitor Index">
+        <sdpi-textfield setting="staticMonitorIndex" pattern="^\d+$" placeholder="Enter numbers only"></sdpi-textfield>
+        <p>
+            Setting the above will lock this key to showing state information for the specified monitor.
+        </p>
+    </sdpi-item>
+
+    <sdpi-item label="Toggle State on Monitor">
+        <sdpi-checkbox setting="toggleStateOnMonitor" label="Highlight when the focused monitor matches above"></sdpi-checkbox>
+    </sdpi-item>
+
+    <sdpi-item label="Static Workspace Index">
+        <sdpi-textfield setting="staticWorkspaceIndex" pattern="^\d+$" placeholder="Enter numbers only"></sdpi-textfield>
+        <p>
+            Setting the above will lock this key to showing state information for the specified workspace
+        </p>
+    </sdpi-item>
+
+    <sdpi-item label="Toggle State on Workspace">
+        <sdpi-checkbox setting="toggleStateOnWorkspace" label="Highlight when the focused workspace matches above"></sdpi-checkbox>
+    </sdpi-item>
+
+    <sdpi-item label="Focus on Keydown">
+        <sdpi-checkbox setting="focusFirst" label="Focus on matching monitor/workspace above on keydown. Focus will execute prior to specified komorebic command."></sdpi-checkbox>
+    </sdpi-item>
+</body>
+
+</html>

@@ -1,0 +1,49 @@
+{
+	"Name": "Komorebi",
+	"Version": "0.1.0.0",
+	"Author": "Kevin Deenanauth",
+	"Actions": [
+		{
+			"Name": "State Display",
+			"UUID": "com.kdeenanauth.komorebi.statedisplay",
+			"Icon": "imgs/actions/statedisplay/icon",
+			"Tooltip": "Displays Komorebi state information and optionally responds to key down events",
+			"PropertyInspectorPath": "ui/state-display.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Name": "Default",
+					"Image": "imgs/actions/statedisplay/key-blank",
+					"TitleAlignment": "middle"
+				}
+			],
+			"DisableCaching": true,
+			"DisableAutomaticStates": true
+		}
+	],
+	"Category": "Komorebi",
+	"CategoryIcon": "imgs/plugin/category-icon",
+	"CodePath": "bin/plugin.js",
+	"Description": "Integrations for the komorebi tiling window manager",
+	"Icon": "imgs/plugin/marketplace",
+	"SDKVersion": 2,
+	"Software": {
+		"MinimumVersion": "6.4"
+	},
+	"OS": [
+		{
+			"Platform": "windows",
+			"MinimumVersion": "10"
+		}
+	],
+	"Nodejs": {
+		"Version": "20",
+		"Debug": "enabled"
+	},
+	"ApplicationsToMonitor": {
+        "windows": ["komorebi.exe"]
+    },
+	"UUID": "com.kdeenanauth.komorebi"
+}
