@@ -32,14 +32,22 @@
                 <li><code>numWindows</code> - number of windows in a workspace</li>
                 <li><code>activeWindowTitle</code></li>
                 <li><code>activeWindowExe</code></li>
+                <li><code>activeWindowExeTrunc</code> - Same as above but with .exe removed from end</li>
             </ul>
         </p>
     </sdpi-item>
 
-    <sdpi-item label="Key Down Komorebic Arguments">
+    <sdpi-item label="Key Up Komorebic Arguments">
         <sdpi-textfield setting="keyArguments" placeholder="E.g. toggle-float"></sdpi-textarea>
         <p>
             Leaving above blank will do nothing on key down
+        </p>
+    </sdpi-item>
+
+    <sdpi-item label="Long Press Komorebic Arguments">
+        <sdpi-textfield setting="longPressKeyArguments" placeholder="E.g. toggle-float"></sdpi-textarea>
+        <p>
+            Leaving above blank will do nothing on long press
         </p>
     </sdpi-item>
     
@@ -66,8 +74,8 @@
         <sdpi-checkbox setting="toggleStateOnWorkspace" label="Highlight when the focused workspace matches above"></sdpi-checkbox>
     </sdpi-item>
 
-    <sdpi-item label="Focus on Keydown">
-        <sdpi-checkbox setting="focusFirst" label="Focus on matching monitor/workspace above on keydown. Focus will execute prior to specified komorebic command."></sdpi-checkbox>
+    <sdpi-item label="Focus on Key Up">
+        <sdpi-checkbox setting="focusFirst" label="Focus on matching monitor/workspace above on key up. Focus will execute prior to specified komorebic command. Focus will not occur on long press."></sdpi-checkbox>
     </sdpi-item>
 </body>
 

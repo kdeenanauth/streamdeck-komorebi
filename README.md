@@ -16,14 +16,12 @@ Displays [Komorebi](https://github.com/LGUG2Z/komorebi) state information and op
 - **Monitor/Workspace Assocation**: Associate a Stream Deck key to a specific monitor and/or workspace. Optionally highlight when monitor/workspace has focus
 - **Focus Monitor/Workspace**: Optionally focus on the specified monitor/workspace on key-down
 - **Execute Komorebic**: Provide command for komorebic on key-down such as `cycle-stack`, `toggle-float`...etc
-
+- **Long press**: Provide alternative long press functionality
 
 ## Roadmap
-- **Long press**: Provide alternative long press functionality
 - **Image customization**: Provide better image customization
 - **Komorebi monitoring**: Provide better monitoring if komorebi goes down. Maybe when [wpm](https://github.com/LGUG2Z/wpm) is ready
 - **More window specific context**: For example, toggle icon based on tiling mode
-
 
 ## Installation
 

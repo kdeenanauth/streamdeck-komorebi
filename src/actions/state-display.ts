@@ -1,8 +1,10 @@
-import streamDeck, { action, DialAction, DidReceiveSettingsEvent, KeyAction, KeyDownEvent, SingletonAction, Target, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
+import { action, DialAction, DidReceiveSettingsEvent, KeyAction, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import { DataBroadcastManager, DataSubscriber } from "../data-subscriber";
 import { DefaultLayout, Notification } from "../komorebi-notifications";
 import { spawn } from "child_process";
 import { parse, ParseEntry } from "shell-quote";
+
+const longPressDuration = 500; // duration in milliseconds before considered a long press
 
 enum ShortLayout {
     Bsp = "BSP",
@@ -42,7 +44,8 @@ interface Variables {
 	containerIndexOneBased: number;
 	numWindows: number;
 	activeWindowTitle: string | null | undefined;
-	activeWindowExe: string | null | undefined
+	activeWindowExe: string | null | undefined;
+	activeWindowExeTrunc: string | null | undefined;
 }
 
 class StateDisplayActionInstance implements DataSubscriber {
@@ -60,6 +63,10 @@ class StateDisplayActionInstance implements DataSubscriber {
 
 	onData(data: Notification): void {
 		if (this.stateDisplaySettings && data.state) {
+			if (data.state.is_paused) {
+				this.evAction.setTitle("||");
+			}
+
 			let activeMonitorIndex = data.state.monitors.focused;
 			let currentMonitorFocused = false;
 			if (this.stateDisplaySettings.staticMonitorIndex != null && this.stateDisplaySettings.staticMonitorIndex >= data.state.monitors.elements.length) {
@@ -116,8 +123,6 @@ class StateDisplayActionInstance implements DataSubscriber {
 					this.evAction.setImage(undefined);
 			}
 
-			streamDeck.logger.info(`${this.stateDisplaySettings.toggleStateOnMonitor} ${this.stateDisplaySettings.toggleStateOnWorkspace} ${currentMonitorFocused} ${currentWorkspaceFocused}`);
-
 			const activeWorkspaceName = data.state.monitors.elements[activeMonitorIndex].workspaces.elements[activeWorkspaceIndex].name;
 			const numWorkspaces = data.state.monitors.elements[activeMonitorIndex].workspaces.elements.length;
 			const activeLayout = data.state.monitors.elements[activeMonitorIndex].workspaces.elements[activeWorkspaceIndex].layout.Default;
@@ -133,7 +138,16 @@ class StateDisplayActionInstance implements DataSubscriber {
 				numWindows += i.windows.elements.length;
 			});
 
-			if (data.state.monitors.elements[activeMonitorIndex].workspaces.elements[activeWorkspaceIndex].containers.elements[activeContainerIndex]) {
+			if (data.state.monitors.elements[activeMonitorIndex].workspaces.elements[activeWorkspaceIndex].monocle_container) {
+				activeWindowIndex = data.state.monitors.elements[activeMonitorIndex].workspaces.elements[activeWorkspaceIndex].monocle_container?.windows.focused;
+				if (activeWindowIndex != undefined) {
+					activeWindow = data.state.monitors.elements[activeMonitorIndex].workspaces.elements[activeWorkspaceIndex].monocle_container?.windows.elements[activeWindowIndex];
+					if (activeWindow) {
+						activeWindowTitle = activeWindow['title'];
+						activeWindowExe = activeWindow['exe'];
+					}
+				}
+			} else if (data.state.monitors.elements[activeMonitorIndex].workspaces.elements[activeWorkspaceIndex].containers.elements[activeContainerIndex]) {
 				activeWindowIndex = data.state.monitors.elements[activeMonitorIndex].workspaces.elements[activeWorkspaceIndex].containers.elements[activeContainerIndex].windows.focused;
 				activeWindow = data.state.monitors.elements[activeMonitorIndex].workspaces.elements[activeWorkspaceIndex].containers.elements[activeContainerIndex].windows.elements[activeWindowIndex];
 				activeWindowTitle = activeWindow['title'];
@@ -155,6 +169,7 @@ class StateDisplayActionInstance implements DataSubscriber {
 					containerIndexOneBased: activeContainerIndex + 1,
 					activeWindowTitle: activeWindowTitle,
 					activeWindowExe: activeWindowExe,
+					activeWindowExeTrunc: activeWindowExe?.replace(/\.exe$/, '')
 				};
 				
 				const formattedTitle = this.stateDisplaySettings.titleFormat.replace(/\${(.*?)}/g, (_, key) => {
@@ -168,13 +183,15 @@ class StateDisplayActionInstance implements DataSubscriber {
 	}
 
 	onDisconnect(): void {
-		// ignore
+		this.evAction.setTitle("||");
+		this.evAction.setImage(undefined);
 	}
 }
 
 @action({ UUID: "com.kdeenanauth.komorebi.statedisplay" })
 export class StateDisplay extends SingletonAction<StateDisplaySettings> {
 	private actionInstanceToBroadcastManager: Map<string, StateDisplayActionInstance>;
+	private keyDownTime: number | null = null; // shared between actions, but probably okay
 
 	constructor(private broadcastManager: DataBroadcastManager) {
 		super();
@@ -206,29 +223,49 @@ export class StateDisplay extends SingletonAction<StateDisplaySettings> {
 	}
 
 	override async onKeyDown(ev: KeyDownEvent<StateDisplaySettings>): Promise<void> {
-		const { settings } = ev.payload;
-		
-		if (settings.focusFirst) {
-			if (settings.staticMonitorIndex != null && settings.staticWorkspaceIndex != null) {
-				spawn('komorebic', ['focus-monitor-workspace', 
-					`${settings.staticMonitorIndex}`,
-					`${settings.staticWorkspaceIndex}`]);
-			} else if (settings.staticMonitorIndex != null) {
-				spawn('komorebic', ['focus-monitor', 
-					`${settings.staticMonitorIndex}`]);
-			} else if (settings.staticWorkspaceIndex != null) {
-				spawn('komorebic', ['focus-workspace', 
-					`${settings.staticWorkspaceIndex}`]);
-			}
+		this.keyDownTime = Date.now();
+	}
+
+	override async onKeyUp(ev: KeyUpEvent<StateDisplaySettings>): Promise<void> {
+		let duration = 0;
+
+		if (this.keyDownTime !== null) {
+			duration = Date.now() - this.keyDownTime;
+			this.keyDownTime = null;
 		}
 
-		if (settings.keyArguments) {
-			const keyArgsAsStrings = parse(settings.keyArguments).map((entry: ParseEntry) => {
-				return entry.toString();
-			});
-			spawn('komorebic', keyArgsAsStrings);
-		}
+		const { settings } = ev.payload;
 		
+		if (duration < longPressDuration || !settings.longPressKeyArguments) {
+			if (settings.focusFirst) {
+				if (settings.staticMonitorIndex != null && settings.staticWorkspaceIndex != null) {
+					spawn('komorebic', ['focus-monitor-workspace', 
+						`${settings.staticMonitorIndex}`,
+						`${settings.staticWorkspaceIndex}`]);
+				} else if (settings.staticMonitorIndex != null) {
+					spawn('komorebic', ['focus-monitor', 
+						`${settings.staticMonitorIndex}`]);
+				} else if (settings.staticWorkspaceIndex != null) {
+					spawn('komorebic', ['focus-workspace', 
+						`${settings.staticWorkspaceIndex}`]);
+				}
+			}
+
+			if (settings.keyArguments) {
+				const keyArgsAsStrings = parse(settings.keyArguments).map((entry: ParseEntry) => {
+					return entry.toString();
+				});
+				spawn('komorebic', keyArgsAsStrings);
+			}
+		} else {
+			if (settings.longPressKeyArguments) {
+				ev.action.showOk();
+				const keyArgsAsStrings = parse(settings.longPressKeyArguments).map((entry: ParseEntry) => {
+					return entry.toString();
+				});
+				spawn('komorebic', keyArgsAsStrings);
+			}
+		}
 	}
 }
 
@@ -238,9 +275,11 @@ export class StateDisplay extends SingletonAction<StateDisplaySettings> {
 type StateDisplaySettings = {
 	titleFormat?: string;
 	keyArguments?: string;
+	longPressKeyArguments?: string;
 	staticMonitorIndex?: number;
 	toggleStateOnMonitor?: boolean;
 	staticWorkspaceIndex?: number;
 	toggleStateOnWorkspace?: boolean;
 	focusFirst?: boolean;
+	keyDownTime: number;
 };

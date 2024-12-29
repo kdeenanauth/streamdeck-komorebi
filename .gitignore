@@ -132,6 +132,7 @@ dist
 # Stream Deck files
 *.sdPlugin/bin
 *.sdPlugin/logs
+com.kdeenanauth.komorebi.streamDeckPlugin
 
 # vscode
 .vscode

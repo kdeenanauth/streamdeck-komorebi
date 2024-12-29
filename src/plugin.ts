@@ -47,6 +47,7 @@ function createServer() {
         client.on('end', () => {
             streamDeck.logger.trace(`komorebi disconnected`);
             broadcastManager.notifyDisconnect();
+            subscribePipe();
         });
 
         client.on('error', (err) => {
