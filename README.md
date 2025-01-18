@@ -19,6 +19,7 @@ Displays [Komorebi](https://github.com/LGUG2Z/komorebi) state information and op
 - **Long press**: Provide alternative long press functionality
 
 ## Roadmap
+- **Dial Support**: Support Stream Deck models which have dials
 - **Image customization**: Provide better image customization
 - **Komorebi monitoring**: Provide better monitoring if komorebi goes down. Maybe when [wpm](https://github.com/LGUG2Z/wpm) is ready
 - **More window specific context**: For example, toggle icon based on tiling mode
