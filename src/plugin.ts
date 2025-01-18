@@ -26,9 +26,12 @@ function subscribePipe() {
 }
 
 function createServer() {
+    let lastServerCreateTime = 0;
+
     const server = net.createServer((client) => {
         streamDeck.logger.trace('komorebi client connected');
         broadcastManager.setClient(client);
+        lastServerCreateTime = Date.now();
 
         // Handle data received from the client
         client.on('data', (data: Buffer) => {
@@ -47,19 +50,30 @@ function createServer() {
         client.on('end', () => {
             streamDeck.logger.trace(`komorebi disconnected`);
             broadcastManager.notifyDisconnect();
-            subscribePipe();
+            
+            // try not to get into a restart loop
+            if (lastServerCreateTime > 0 && (Date.now() - lastServerCreateTime) > retryInterval) {
+                subscribePipe();
+            } else {
+                // wait 5s before restarting
+                setTimeout(subscribePipe, retryInterval);
+            }
         });
 
         client.on('error', (err) => {
-            streamDeck.logger.trace(`komorebi pipe error: ${err.message}`);
+            streamDeck.logger.error(`komorebi pipe error: ${err.message}`);
         });
     });
 
+    server.on('error', (err) => {
+        streamDeck.logger.error(`komorebi server pipe error: ${err.message}`);
+    });
+
     server.listen(PIPE_NAME, () => {
+        streamDeck.logger.trace('komorebi listener started');
         subscribePipe();
     });
 }
-
 streamDeck.logger.trace(`starting pipe for komorebi`);
 createServer();
 
